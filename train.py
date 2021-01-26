@@ -1,9 +1,10 @@
 
-import numpy as np
-from network import set_network
+import random
+from network import set_network, action_size
 from exp_memory import Memory
+from env import *
 from collections import deque
-from tensorflow.losses import huber_loss
+from tensorflow.keras.callbacks import LearningRateScheduler
 from tensorflow.keras.layers import Activation, Add, BatchNormalization, Conv2D, Dense, GlobalAveragePooling2D, Input
 from tensorflow.keras.models import Model
 from tensorflow.keras.regularizers import l2
@@ -17,30 +18,42 @@ MAX_STEPS = 20000
 GAMMA = 0.99
 WARMUP = 10
 
-E_START = 1.0
-E_STOP = 0.01
-E_DECAY_RATE = 0.001
+E_START = 0.5
+E_STOP = 0.1
+E_DECAY_RATE = 0.00001
 
 MEMORY_SIZE = 100000
 BATCH_SIZE = 32
+
+SKIP_FRAMES = 4
 
 
 if __name__ == '__main__':
     set_network()
 
     main_qn = load_model('./model/model.h5')
-    target_qn = load_model('./model/model.h5')
-    main_qn.compile(loss=['categorical_crossentropy', 'mse'], optimizer='adam')
-    target_qn.compile(loss=['categorical_crossentropy', 'mse'], optimizer='adam')
+    main_qn.compile(loss='categorical_crossentropy', optimizer='adam')
+
+    def step_decay(epoch):
+        x = 0.001
+        if epoch >= 50: x = 0.0005
+        if epoch >= 80: x = 0.00025
+        return x
+    lr_decay = LearningRateScheduler(step_decay)
+
     memory = Memory(MEMORY_SIZE)
 
     total_step = 0
 
     for episode in range(1, NUM_EPISODES + 1):
-        step = 0
+        while True:
+            state = get_state()
+            if start_of_episode(state) == 1:
+                break
 
-        # set weights of target Q-Network
-        target_qn.model.set_weights(main_qn.model.get_weights())
+        step = 0
+        action = 1
+        state_deque = deque(maxlen=5)
 
         for _ in range(1, MAX_STEPS + 1):
             step += 1
@@ -49,38 +62,41 @@ if __name__ == '__main__':
             # epsilon decay
             epsilon = E_STOP + (E_START - E_STOP) * np.exp(-E_DECAY_RATE * total_step)
 
-            if epsilon > np.random.rand():
-                action = env.action_space.sample()
-            else:
-                action = np.argmax(main_qn.model.predict(state)[0])
+            current_state_arr = get_state_arr(state_deque, 0, 4)
 
-            next_state, _, done, _ = env.step(action)
-            next_state = np.reshape(next_state, [1, state_size])
+            if step % SKIP_FRAMES == 1:
+                release_every_key()
 
-            if done:
-                if step >= 190:
-                    success_count += 1
-                    reward = 1
+                if epsilon > np.random.rand() or len(state_deque) < 5:
+                    action = random.randrange(0, action_size)
                 else:
-                    success_count = 0
-                    reward = 0
+                    predict_arr = np.zeros((1, 128, 128, 4))
+                    predict_arr[0] = current_state_arr
+                    action = np.argmax(main_qn.predict(predict_arr)[0])
 
-                # empty state
-                next_state = np.zeros(state.shape)
+                press_game_key(action)
+                print(action, step)
 
-                if step > WARMUP:
-                    memory.add((state, action, reward, next_state))
-            else:
-                reward = 0
+            state = get_state()
+            state_deque.append(state)
 
-                if step > WARMUP:
-                    memory.add((state, action, reward, next_state))
+            cv2.imshow('mario', state)
+            if cv2.waitKey(25) & 0xFF == ord('q'):
+                cv2.destroyAllWindows()
+                break
 
-                state = next_state
+            if step > WARMUP:
+                reward = get_reward(state_deque)
+                if action == 1 or action == 5 or action == 7 or action == 9:
+                    reward += 0.2  # additional reward for moving toward the right side; especially for the Super Mario Bros
+                print(reward)
+                memory.add((current_state_arr, action, reward, get_state_arr(state_deque, 1, 5)))
 
-            if len(memory) >= BATCH_SIZE:
-                inputs = np.zeros((BATCH_SIZE, 4))  # input (state)
-                targets = np.zeros((BATCH_SIZE, 2))  # output (value of each action)
+            if len(memory) >= BATCH_SIZE and step % 2 == 0:
+                pause_button()
+
+                inputs = np.zeros((BATCH_SIZE, 128, 128, 4))  # input (state)
+                targets = np.zeros((BATCH_SIZE, action_size))  # output (value of each action)
 
                 minibatch = memory.sample(BATCH_SIZE)
 
@@ -88,24 +104,29 @@ if __name__ == '__main__':
                     inputs[i] = state_b
 
                     # compute value
-                    if not (next_state_b == np.zeros(state_b.shape)).all(axis=1):
-                        target = reward_b + GAMMA * np.amax(target_qn.model.predict(next_state_b)[0])
+                    if not (next_state_b[1][1][-1] == 0):
+                        predict_arr = np.zeros((1, 128, 128, 4))
+                        predict_arr[0] = next_state_b
+                        target = reward_b + GAMMA * np.amax(main_qn.predict(predict_arr)[0])
                     else:
                         target = reward_b
 
-                    targets[i] = main_qn.model.predict(state_b)
+                    predict_arr = np.zeros((1, 128, 128, 4))
+                    predict_arr[0] = state_b
+
+                    targets[i] = main_qn.predict(predict_arr)
                     targets[i][action_b] = target
 
-                main_qn.model.fit(inputs, targets, nb_epoch=1, verbose=0)
+                print('Fitting...')
+                main_qn.fit(inputs, targets, epochs=1, verbose=0)
 
-            if done:
+                pause_button()
+
+            if end_of_episode(state):
                 break
 
-        print('에피소드: {}, 스텝 수: {}, epsilon: {:.4f}'.format(episode, step, epsilon))
+        print('에피소드: {}, 스텝 수: {}, epsilon: {:.5f}'.format(episode, step, epsilon))
+        main_qn.save('./model/model.h5')
 
-        # stop learning when successes 5 times in a row
-        if success_count >= 5:
-            break
-
-        state = env.reset()
-        state = np.reshape(state, [1, state_size])
+    K.clear_session()
+    del main_qn

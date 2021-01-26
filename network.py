@@ -9,7 +9,7 @@ import os
 dn_filters = 32
 dn_residual_num = 4
 img_width = 128
-action_size = 4
+action_size = 10
 
 DN_INPUT_SHAPE = (img_width, img_width, 4)
 DN_OUTPUT_SIZE = action_size

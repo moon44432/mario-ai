@@ -1,14 +1,10 @@
-
 import ctypes
 import time
 
 SendInput = ctypes.windll.user32.SendInput
 
 # Use Key Scan Codes instead of VKs
-A = 0x1E
-D = 0x20
-J = 0x24
-K = 0x25
+game_keys = [0x1E, 0x20, 0x24, 0x25]  # A D J K
 ESC = 0x01
 
 PUL = ctypes.POINTER(ctypes.c_ulong)

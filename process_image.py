@@ -7,7 +7,7 @@ mon = {'top': 60, 'left': 0, 'width': 512, 'height': 480}
 
 def process_img(original_image):
     bw_img = cv2.cvtColor(original_image, cv2.COLOR_BGR2GRAY)
-    resized_img = cv2.resize(bw_img, dsize=(128, 128))
+    resized_img = cv2.resize(bw_img, dsize=(128, 128), interpolation=cv2.INTER_AREA)
     return resized_img
 
 def get_image():
