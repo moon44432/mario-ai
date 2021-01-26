@@ -1,12 +1,15 @@
+
 import ctypes
 import time
 
 SendInput = ctypes.windll.user32.SendInput
 
+# Use Key Scan Codes instead of VKs
 A = 0x1E
 D = 0x20
 J = 0x24
 K = 0x25
+ESC = 0x01
 
 PUL = ctypes.POINTER(ctypes.c_ulong)
 
@@ -54,10 +57,10 @@ def PressKey(hexKeyCode):
     ctypes.windll.user32.SendInput(1, ctypes.pointer(x), ctypes.sizeof(x))
 
 
-def ReleaseKey(heyKeyCode):
+def ReleaseKey(hexKeyCode):
     extra = ctypes.c_ulong(0)
     ii_ = Input_I()
-    ii_.ki = KeyBdInput(0, heyKeyCode, 0x0008 | 0x0002, 0, ctypes.pointer(extra))
+    ii_.ki = KeyBdInput(0, hexKeyCode, 0x0008 | 0x0002, 0, ctypes.pointer(extra))
 
     x = Input(ctypes.c_ulong(1), ii_)
     ctypes.windll.user32.SendInput(1, ctypes.pointer(x), ctypes.sizeof(x))
@@ -66,7 +69,6 @@ def ReleaseKey(heyKeyCode):
 if __name__ == '__main__':
     time.sleep(1)
     while True:
-        PressKey(K)
-        time.sleep(1)
-        ReleaseKey(K)
-        time.sleep(1)
+        PressKey(ESC)
+        ReleaseKey(ESC)
+        time.sleep(0.1)

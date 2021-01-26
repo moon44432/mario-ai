@@ -22,6 +22,7 @@ if __name__ == "__main__":
             screen = get_image()
             new_screen = process_img(screen)
 
+            # print(new_screen)
             cv2.imshow('mario', new_screen)
 
             if cv2.waitKey(25) & 0xFF == ord('q'):

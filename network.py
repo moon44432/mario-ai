@@ -7,12 +7,12 @@ import os
 
 # params
 dn_filters = 32
-dn_residual_num = 8
+dn_residual_num = 4
 img_width = 128
-key_num = 4
+action_size = 4
 
-DN_INPUT_SHAPE = (img_width, img_width, 2)
-DN_OUTPUT_SIZE = key_num
+DN_INPUT_SHAPE = (img_width, img_width, 4)
+DN_OUTPUT_SIZE = action_size
 
 
 def conv(filters):
@@ -35,7 +35,7 @@ def residual_block():
     return f
 
 
-def network():
+def set_network():
     if os.path.exists('./model/model.h5'):
         return
 
@@ -53,10 +53,7 @@ def network():
     p = Dense(DN_OUTPUT_SIZE, kernel_regularizer=l2(0.0005),
               activation='softmax', name='pi')(x)
 
-    v = Dense(1, kernel_regularizer=l2(0.0005))(x)
-    v = Activation('tanh', name='v')(v)
-
-    model = Model(inputs=input, outputs=[p, v])
+    model = Model(inputs=input, outputs=p)
 
     os.makedirs('./model/', exist_ok=True)
     model.save('./model/model.h5')
@@ -65,4 +62,4 @@ def network():
     del model
 
 if __name__ == '__main__':
-    network()
+    set_network()
