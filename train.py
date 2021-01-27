@@ -1,5 +1,6 @@
 
 import random
+import time
 from network import set_network, action_size
 from exp_memory import Memory
 from env import *
@@ -18,7 +19,7 @@ MAX_STEPS = 20000
 GAMMA = 0.99
 WARMUP = 10
 
-E_START = 0.5
+E_START = 0.8
 E_STOP = 0.1
 E_DECAY_RATE = 0.00001
 
@@ -54,6 +55,7 @@ if __name__ == '__main__':
         step = 0
         action = 1
         state_deque = deque(maxlen=5)
+        dead = False
 
         for _ in range(1, MAX_STEPS + 1):
             step += 1
@@ -75,52 +77,52 @@ if __name__ == '__main__':
                     action = np.argmax(main_qn.predict(predict_arr)[0])
 
                 press_game_key(action)
-                print(action, step)
 
             state = get_state()
             state_deque.append(state)
 
-            cv2.imshow('mario', state)
-            if cv2.waitKey(25) & 0xFF == ord('q'):
-                cv2.destroyAllWindows()
-                break
-
+            print('Step: {} Action: {} '.format(step, action), end='')
             if step > WARMUP:
                 reward = get_reward(state_deque)
-                if action == 1 or action == 5 or action == 7 or action == 9:
-                    reward += 0.2  # additional reward for moving toward the right side; especially for the Super Mario Bros
-                print(reward)
+                if is_scrolling(state_deque):
+                    reward += 0.1  # additional reward for moving toward the right side; especially for the Super Mario Bros
+                if is_dead(state_deque):
+                    reward -= 1
+                    dead = True
+                print('Reward: {}'.format(reward))
                 memory.add((current_state_arr, action, reward, get_state_arr(state_deque, 1, 5)))
 
-            if len(memory) >= BATCH_SIZE and step % 2 == 0:
-                pause_button()
+            if dead == False:
+                if len(memory) >= BATCH_SIZE and step % 2 == 0:
+                    pause_button()
 
-                inputs = np.zeros((BATCH_SIZE, 128, 128, 4))  # input (state)
-                targets = np.zeros((BATCH_SIZE, action_size))  # output (value of each action)
+                    inputs = np.zeros((BATCH_SIZE, 128, 128, 4))  # input (state)
+                    targets = np.zeros((BATCH_SIZE, action_size))  # output (value of each action)
 
-                minibatch = memory.sample(BATCH_SIZE)
+                    minibatch = memory.sample(BATCH_SIZE)
 
-                for i, (state_b, action_b, reward_b, next_state_b) in enumerate(minibatch):
-                    inputs[i] = state_b
+                    for i, (state_b, action_b, reward_b, next_state_b) in enumerate(minibatch):
+                        inputs[i] = state_b
 
-                    # compute value
-                    if not (next_state_b[1][1][-1] == 0):
+                        # compute value
+                        if not (next_state_b[1][1][-1] == 0):
+                            predict_arr = np.zeros((1, 128, 128, 4))
+                            predict_arr[0] = next_state_b
+                            target = reward_b + GAMMA * np.amax(main_qn.predict(predict_arr)[0])
+                        else:
+                            target = reward_b
+
                         predict_arr = np.zeros((1, 128, 128, 4))
-                        predict_arr[0] = next_state_b
-                        target = reward_b + GAMMA * np.amax(main_qn.predict(predict_arr)[0])
-                    else:
-                        target = reward_b
+                        predict_arr[0] = state_b
 
-                    predict_arr = np.zeros((1, 128, 128, 4))
-                    predict_arr[0] = state_b
+                        targets[i] = main_qn.predict(predict_arr)
+                        targets[i][action_b] = target
 
-                    targets[i] = main_qn.predict(predict_arr)
-                    targets[i][action_b] = target
+                    print('Fitting...')
+                    main_qn.fit(inputs, targets, epochs=1, verbose=0)
 
-                print('Fitting...')
-                main_qn.fit(inputs, targets, epochs=1, verbose=0)
-
-                pause_button()
+                    pause_button()
+                    time.sleep(0.05)
 
             if end_of_episode(state):
                 break

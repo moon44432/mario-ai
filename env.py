@@ -11,33 +11,17 @@ def pause_button():
 
 def press_game_key(key):
     if key == 0:
-        PressKey(game_keys[0])
+        PressKey(game_keys[0])  # Left
     elif key == 1:
-        PressKey(game_keys[1])
+        PressKey(game_keys[1])  # Right
     elif key == 2:
-        PressKey(game_keys[2])
+        PressKey(game_keys[0])  # Left + Jump
+        PressKey(game_keys[3])
     elif key == 3:
+        PressKey(game_keys[1])  # Right + Jump
         PressKey(game_keys[3])
     elif key == 4:
-        PressKey(game_keys[0])
-        PressKey(game_keys[2])
-    elif key == 5:
-        PressKey(game_keys[1])
-        PressKey(game_keys[2])
-    elif key == 6:
-        PressKey(game_keys[0])
-        PressKey(game_keys[2])
-        PressKey(game_keys[3])
-    elif key == 7:
-        PressKey(game_keys[1])
-        PressKey(game_keys[2])
-        PressKey(game_keys[3])
-    elif key == 8:
-        PressKey(game_keys[0])
-        PressKey(game_keys[3])
-    elif key == 9:
-        PressKey(game_keys[1])
-        PressKey(game_keys[3])
+        PressKey(game_keys[3])  # Jump
 
 
 def release_every_key():
@@ -56,8 +40,22 @@ def get_state_arr(state_deque, start, stop):
     return state_array
 
 
+def is_scrolling(state_deque):
+    if np.sum(state_deque[-1][120:128, 0:128] - state_deque[-2][120:128, 0:128]) != 0:  # detect screen scrolling
+        return 1
+    else:
+        return 0
+
+
 def get_reward(state_deque):
     if np.sum(state_deque[-1][8:15, 14:34] - state_deque[-2][8:15, 14:34]) != 0:  # detect score change
+        return 1
+    else:
+        return 0
+
+
+def is_dead(state_deque):
+    if np.sum(state_deque[-1][0:10, 120:128] - state_deque[-2][0:10, 120:128]) != 0:  # detect death message
         return 1
     else:
         return 0
@@ -89,8 +87,13 @@ if __name__ == '__main__':
         if end_of_episode(state):
             continue
 
-        if len(state_deque) == 5 and get_reward(state_deque) == 1:
-            print('+Reward')
+        if len(state_deque) == 5:
+            if get_reward(state_deque) == 1:
+                print('+Reward')
+            if is_scrolling(state_deque):
+                print('Scrolling')
+            if is_dead(state_deque):
+                print('Dead')
 
         cv2.imshow('mario', state)
         if cv2.waitKey(25) & 0xFF == ord('q'):
