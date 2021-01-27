@@ -19,7 +19,7 @@ MAX_STEPS = 20000
 GAMMA = 0.99
 WARMUP = 10
 
-E_START = 0.8
+E_START = 0.62
 E_STOP = 0.1
 E_DECAY_RATE = 0.00001
 
@@ -56,6 +56,7 @@ if __name__ == '__main__':
         action = 1
         state_deque = deque(maxlen=5)
         dead = False
+        do_learn = True
 
         for _ in range(1, MAX_STEPS + 1):
             step += 1
@@ -81,7 +82,7 @@ if __name__ == '__main__':
             state = get_state()
             state_deque.append(state)
 
-            print('Step: {} Action: {} '.format(step, action), end='')
+            print('Episode: {} Step: {} Action: {} '.format(episode, step, action), end='')
             if step > WARMUP:
                 reward = get_reward(state_deque)
                 if is_scrolling(state_deque):
@@ -89,18 +90,18 @@ if __name__ == '__main__':
                 if is_dead(state_deque):
                     reward -= 1
                     dead = True
-                print('Reward: {}'.format(reward))
+                print('Reward: {} '.format(reward), end = '')
                 memory.add((current_state_arr, action, reward, get_state_arr(state_deque, 1, 5)))
 
-            if dead == False:
-                if len(memory) >= BATCH_SIZE and step % 2 == 0:
+            if do_learn is True:
+                if len(memory) >= BATCH_SIZE:
                     pause_button()
 
                     inputs = np.zeros((BATCH_SIZE, 128, 128, 4))  # input (state)
                     targets = np.zeros((BATCH_SIZE, action_size))  # output (value of each action)
 
                     minibatch = memory.sample(BATCH_SIZE)
-
+                    print('Fitting...', end='')
                     for i, (state_b, action_b, reward_b, next_state_b) in enumerate(minibatch):
                         inputs[i] = state_b
 
@@ -117,12 +118,15 @@ if __name__ == '__main__':
 
                         targets[i] = main_qn.predict(predict_arr)
                         targets[i][action_b] = target
-
-                    print('Fitting...')
                     main_qn.fit(inputs, targets, epochs=1, verbose=0)
 
                     pause_button()
                     time.sleep(0.05)
+
+            print('')
+
+            if dead is True:
+                do_learn = False
 
             if end_of_episode(state):
                 break
