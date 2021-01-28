@@ -72,7 +72,7 @@ if __name__ == '__main__':
                     action = np.argmax(predict)
                     value = predict
 
-                press_game_key(action)
+                do_action(action)
 
             state = get_state()
             state_deque.append(state)
@@ -83,7 +83,7 @@ if __name__ == '__main__':
                 if is_scrolling(state_deque):
                     reward += 0.0001  # additional reward for moving toward the right side; especially for the Super Mario Bros
                 if is_dead(state_deque):
-                    reward -= 1
+                    reward = -1
                     dead = True
                 print('Reward: {}'.format(reward))
                 memory.add((current_state_arr, action, reward, get_state_arr(state_deque, 1, 5)))

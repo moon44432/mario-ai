@@ -9,7 +9,7 @@ def pause_button():
     ReleaseKey(ESC)
 
 
-def press_game_key(key):
+def do_action(key):
     if key == 0:
         PressKey(game_keys[0])  # Left
     elif key == 1:

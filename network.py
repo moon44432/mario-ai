@@ -16,7 +16,7 @@ DN_OUTPUT_SIZE = action_size
 
 
 def conv(filters):
-    return Conv2D(filters, 3, padding='same', use_bias=False,
+    return Conv2D(filters, 5, padding='same', use_bias=False,
                   kernel_initializer='he_normal', kernel_regularizer=l2(0.0005))
 
 
@@ -49,6 +49,9 @@ def set_network():
         x = residual_block()(x)
 
     x = GlobalAveragePooling2D()(x)
+
+    x = Dense(256, kernel_regularizer=l2(0.0005), activation='relu')(x)
+    x = Dense(64, kernel_regularizer=l2(0.0005), activation='relu')(x)
 
     p = Dense(DN_OUTPUT_SIZE, kernel_regularizer=l2(0.0005),
               activation='linear')(x)

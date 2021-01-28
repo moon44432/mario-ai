@@ -46,7 +46,7 @@ if __name__ == '__main__':
                     action = np.argmax(predict)
                     value = predict[action]
 
-                press_game_key(action)
+                do_action(action)
 
             state = get_state()
             cv2.imshow('mario', state)
