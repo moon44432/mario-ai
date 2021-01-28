@@ -91,7 +91,8 @@ if __name__ == '__main__':
             if get_reward(state_deque) == 1:
                 print('+Reward')
             if is_scrolling(state_deque):
-                print('Scrolling')
+                # print('Scrolling')
+                pass
             if is_dead(state_deque):
                 print('Dead')
 

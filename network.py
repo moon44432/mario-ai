@@ -51,7 +51,7 @@ def set_network():
     x = GlobalAveragePooling2D()(x)
 
     p = Dense(DN_OUTPUT_SIZE, kernel_regularizer=l2(0.0005),
-              activation='softmax', name='pi')(x)
+              activation='linear')(x)
 
     model = Model(inputs=input, outputs=p)
 

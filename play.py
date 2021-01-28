@@ -27,6 +27,7 @@ if __name__ == '__main__':
         step = 0
         action = 1
         epsilon = 0.1
+        value = 0
         state_deque = deque(maxlen=5)
 
         for _ in range(1, MAX_STEPS + 1):
@@ -41,14 +42,20 @@ if __name__ == '__main__':
                 else:
                     predict_arr = np.zeros((1, 128, 128, 4))
                     predict_arr[0] = current_state_arr
-                    action = np.argmax(model.predict(predict_arr)[0])
+                    predict = model.predict(predict_arr)[0]
+                    action = np.argmax(predict)
+                    value = predict[action]
 
                 press_game_key(action)
 
             state = get_state()
+            cv2.imshow('mario', state)
+            if cv2.waitKey(25) & 0xFF == ord('q'):
+                cv2.destroyAllWindows()
+
             state_deque.append(state)
 
-            print('Game #{} Step: {} Action: {} '.format(game, step, action), end='')
+            print('Game #{} Step: {} Action: {} Value: {}'.format(game, step, action, value), end='')
             print('')
 
             time.sleep(0.05)
