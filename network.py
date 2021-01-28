@@ -7,7 +7,7 @@ import os
 
 # params
 dn_filters = 32
-dn_residual_num = 8
+dn_residual_num = 4
 img_width = 128
 action_size = 5
 
@@ -51,7 +51,6 @@ def set_network():
     x = GlobalAveragePooling2D()(x)
 
     x = Dense(256, kernel_regularizer=l2(0.0005), activation='relu')(x)
-    x = Dense(64, kernel_regularizer=l2(0.0005), activation='relu')(x)
 
     p = Dense(DN_OUTPUT_SIZE, kernel_regularizer=l2(0.0005),
               activation='linear')(x)
