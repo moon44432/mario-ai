@@ -22,7 +22,7 @@ E_STOP = 0.1
 E_DECAY_RATE = 0.00001
 
 MEMORY_SIZE = 100000
-BATCH_SIZE = 32
+BATCH_SIZE = 64
 
 SKIP_FRAMES = 4
 
@@ -46,7 +46,7 @@ if __name__ == '__main__':
         step = 0
         value = 0
         action = 1
-        state_deque = deque(maxlen=5)
+        state_deque = deque(maxlen=4)
         dead = False
         do_learn = True
 
@@ -57,12 +57,12 @@ if __name__ == '__main__':
             # epsilon decay
             epsilon = E_STOP + (E_START - E_STOP) * np.exp(-E_DECAY_RATE * total_step)
 
-            current_state_arr = get_state_arr(state_deque, 0, 4)
+            current_state_arr = get_state_arr(state_deque)
 
             if step % SKIP_FRAMES == 1:
                 release_every_key()
 
-                if epsilon > np.random.rand() or len(state_deque) < 5:
+                if epsilon > np.random.rand() or len(state_deque) < 4:
                     action = random.randrange(0, action_size)
                     value = 0
                 else:
@@ -75,18 +75,18 @@ if __name__ == '__main__':
                 do_action(action)
 
             state = get_state()
-            state_deque.append(state)
+            state_deque.append(state / 255)
 
             print('Episode: {}, Step: {}, Epsilon: {}, Action: {}, '.format(episode, step, epsilon, action), end='')
             if step > WARMUP:
                 reward = get_reward(state_deque)
-                if is_scrolling(state_deque):
-                    reward += 0.0001  # additional reward for moving toward the right side; especially for the Super Mario Bros
+                if is_scrolling(state_deque) and (action == 1 or action == 3):
+                    reward += 0.01  # additional reward for moving toward the right side; especially for the Super Mario Bros
                 if is_dead(state_deque):
                     reward = -1
                     dead = True
                 print('Reward: {}'.format(reward))
-                memory.add((current_state_arr, action, reward, get_state_arr(state_deque, 1, 5)))
+                memory.add((current_state_arr, action, reward, get_state_arr(state_deque)))
 
             print(value)
 

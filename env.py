@@ -34,8 +34,8 @@ def get_state():
     return state
 
 
-def get_state_arr(state_deque, start, stop):
-    state_array = np.array(list(state_deque)[start:stop])
+def get_state_arr(state_deque):
+    state_array = np.array(list(state_deque))
     state_array = np.transpose(state_array)
     return state_array
 
@@ -76,8 +76,7 @@ def start_of_episode(state):
 
 
 if __name__ == '__main__':
-    state_deque = deque(maxlen=5)
-
+    state_deque = deque(maxlen=4)
     release_every_key()
 
     while True:
@@ -87,7 +86,7 @@ if __name__ == '__main__':
         if end_of_episode(state):
             continue
 
-        if len(state_deque) == 5:
+        if len(state_deque) == 4:
             if get_reward(state_deque) == 1:
                 print('+Reward')
             if is_scrolling(state_deque):
