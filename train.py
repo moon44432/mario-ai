@@ -113,6 +113,7 @@ if __name__ == '__main__':
 
                     main_qn.fit(inputs, targets, epochs=1, verbose=0)
 
+                    time.sleep(0.1)
                     pause_button()
                     time.sleep(0.05)
 
