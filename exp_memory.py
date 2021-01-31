@@ -2,6 +2,7 @@
 import numpy as np
 from collections import deque
 
+
 class Memory():
     def __init__(self, memory_size):
         self.buffer = deque(maxlen=memory_size)

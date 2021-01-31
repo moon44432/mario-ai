@@ -1,5 +1,5 @@
 
-from keras.layers import Conv2D, Dense, MaxPool2D, Flatten, Dropout
+from keras.layers import Conv2D, Dense, MaxPool2D, Flatten
 from keras.models import Sequential
 from keras.regularizers import l2
 import os
@@ -12,10 +12,7 @@ DN_INPUT_SHAPE = (img_width, img_width, 4)
 DN_OUTPUT_SIZE = action_size
 
 
-def set_network():
-    if os.path.exists('./model/model.h5'):
-        return
-
+def create_network():
     model = Sequential()
 
     model.add(Conv2D(16, (5, 5), activation='relu', padding='same', strides=2,
@@ -37,10 +34,20 @@ def set_network():
 
     print(model.summary())
 
+    return model
+
+
+def set_network():
+    if os.path.exists('./model/model.h5'):
+        return
+
+    model = create_network()
+
     os.makedirs('./model/', exist_ok=True)
     model.save('./model/model.h5')
 
     del model
+
 
 if __name__ == '__main__':
     set_network()

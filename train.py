@@ -1,7 +1,7 @@
 
 import random
 import time
-from network import set_network, action_size
+from network import set_network, action_size, create_network
 from exp_memory import Memory
 from env import *
 from collections import deque
@@ -30,6 +30,8 @@ if __name__ == '__main__':
     set_network()
 
     main_qn = load_model('./model/model.h5')
+    target_qn = create_network()
+    target_qn.compile(loss=huber_loss, optimizer=Adam(lr=0.001))
     main_qn.compile(loss=huber_loss, optimizer=Adam(lr=0.001))
 
     memory = Memory(MEMORY_SIZE)
@@ -48,6 +50,8 @@ if __name__ == '__main__':
         state_deque = deque(maxlen=4)
         dead = False
         do_learn = True
+
+        target_qn.model.set_weights(main_qn.model.get_weights())
 
         for _ in range(1, MAX_STEPS + 1):
             step += 1
@@ -104,7 +108,7 @@ if __name__ == '__main__':
                         # compute value
                         predict_arr = np.zeros((1, 128, 128, 4))
                         predict_arr[0] = next_state_b
-                        target = reward_b + GAMMA * np.amax(main_qn.predict(predict_arr)[0])
+                        target = reward_b + GAMMA * np.amax(target_qn.predict(predict_arr)[0])
 
                         predict_arr[0] = state_b
                         targets[i] = main_qn.predict(predict_arr)
@@ -125,3 +129,4 @@ if __name__ == '__main__':
         main_qn.save('./model/model.h5')
 
     del main_qn
+    del target_qn
