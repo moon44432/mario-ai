@@ -5,9 +5,8 @@ from network import set_network, action_size
 from exp_memory import Memory
 from env import *
 from collections import deque
-from tensorflow.keras.optimizers import Adam
-from tensorflow.keras import backend as K
-from tensorflow.keras.models import load_model
+from keras.optimizers import Adam
+from keras.models import load_model
 from tensorflow.losses import huber_loss
 
 # params
@@ -22,7 +21,7 @@ E_STOP = 0.1
 E_DECAY_RATE = 0.00001
 
 MEMORY_SIZE = 100000
-BATCH_SIZE = 64
+BATCH_SIZE = 32
 
 SKIP_FRAMES = 4
 
@@ -73,9 +72,10 @@ if __name__ == '__main__':
                     value = predict
 
                 do_action(action)
+                time.sleep(0.05)
 
             state = get_state()
-            state_deque.append(state / 255)
+            state_deque.append(state.astype('float32') / 255.0)
 
             print('Episode: {}, Step: {}, Epsilon: {}, Action: {}, '.format(episode, step, epsilon, action), end='')
             if step > WARMUP:
@@ -106,7 +106,6 @@ if __name__ == '__main__':
                         predict_arr[0] = next_state_b
                         target = reward_b + GAMMA * np.amax(main_qn.predict(predict_arr)[0])
 
-                        predict_arr = np.zeros((1, 128, 128, 4))
                         predict_arr[0] = state_b
                         targets[i] = main_qn.predict(predict_arr)
                         targets[i][action_b] = target
@@ -125,5 +124,4 @@ if __name__ == '__main__':
 
         main_qn.save('./model/model.h5')
 
-    K.clear_session()
     del main_qn

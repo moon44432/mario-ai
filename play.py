@@ -4,7 +4,8 @@ import random
 from network import action_size
 from env import *
 from collections import deque
-from tensorflow.keras.models import load_model
+from keras.models import load_model
+
 
 # params
 
@@ -14,7 +15,7 @@ GAMMA = 0.99
 WARMUP = 10
 SKIP_FRAMES = 4
 
-akkkkkkk
+
 if __name__ == '__main__':
     model = load_model('./model/model.h5')
     model.summary()
@@ -27,11 +28,11 @@ if __name__ == '__main__':
 
         step = 0
         action = 1
-        epsilon = 0.1
+        epsilon = 0.05
         value = 0
         state_deque = deque(maxlen=4)
 
-        for _ in range(1, MAX_STEPS + 1):
+        while True:
             step += 1
             current_state_arr = get_state_arr(state_deque)
 
@@ -49,13 +50,14 @@ if __name__ == '__main__':
                     print(predict)
 
                 do_action(action)
+                time.sleep(0.05)
 
             state = get_state()
             cv2.imshow('mario', state)
             if cv2.waitKey(25) & 0xFF == ord('q'):
                 cv2.destroyAllWindows()
 
-            state_deque.append(state / 255)
+            state_deque.append(state.astype('float32') / 255.0)
 
             print('Game #{} Step: {} Action: {} Value: {}'.format(game, step, action, value), end='')
             print('')
