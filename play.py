@@ -12,7 +12,6 @@ from keras.models import load_model
 NUM_GAMES = 1000
 MAX_STEPS = 20000
 GAMMA = 0.99
-WARMUP = 10
 SKIP_FRAMES = 4
 
 
@@ -28,7 +27,7 @@ if __name__ == '__main__':
 
         step = 0
         action = 1
-        epsilon = 0.05
+        epsilon = 0.1
         value = 0
         state_deque = deque(maxlen=4)
 
@@ -59,7 +58,7 @@ if __name__ == '__main__':
 
             state_deque.append(state.astype('float32') / 255.0)
 
-            print('Game #{} Step: {} Action: {} Value: {}'.format(game, step, action, value), end='')
+            print('Game #{} Step: {} Action: {} Value: {}'.format(game, step, action_name[action], value), end='')
             print('')
 
             time.sleep(0.05)

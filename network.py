@@ -15,20 +15,17 @@ DN_OUTPUT_SIZE = action_size
 def create_network():
     model = Sequential()
 
-    model.add(Conv2D(16, (5, 5), activation='relu', padding='same', strides=2,
+    model.add(Conv2D(32, (6, 6), activation='relu', padding='same', strides=4,
                      kernel_initializer='he_normal', kernel_regularizer=l2(0.0005), input_shape=DN_INPUT_SHAPE))
-    model.add(MaxPool2D(pool_size=(2, 2)))
 
-    model.add(Conv2D(32, (5, 5), activation='relu', padding='same', strides=2,
+    model.add(Conv2D(32, (4, 4), activation='relu', padding='same', strides=2,
                      kernel_initializer='he_normal', kernel_regularizer=l2(0.0005)))
-    model.add(MaxPool2D(pool_size=(2, 2)))
 
-    model.add(Conv2D(16, (5, 5), activation='relu', padding='same',
+    model.add(Conv2D(32, (3, 3), activation='relu', padding='same', strides=1,
                      kernel_initializer='he_normal', kernel_regularizer=l2(0.0005)))
-    model.add(MaxPool2D(pool_size=(2, 2)))
 
     model.add(Flatten())
-    model.add(Dense(128, activation='relu'))
+    model.add(Dense(256, activation='relu'))
 
     model.add(Dense(DN_OUTPUT_SIZE, activation='linear'))
 

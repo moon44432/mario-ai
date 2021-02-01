@@ -5,8 +5,8 @@ from network import set_network, action_size, create_network
 from exp_memory import Memory
 from env import *
 from collections import deque
-from keras.optimizers import Adam
 from keras.models import load_model
+from keras.optimizers import Adam
 from tensorflow.losses import huber_loss
 
 # params
@@ -20,7 +20,7 @@ E_START = 0.99
 E_STOP = 0.1
 E_DECAY_RATE = 0.00001
 
-MEMORY_SIZE = 100000
+MEMORY_SIZE = 1000000
 BATCH_SIZE = 32
 
 SKIP_FRAMES = 4
@@ -31,8 +31,7 @@ if __name__ == '__main__':
 
     main_qn = load_model('./model/model.h5')
     target_qn = create_network()
-    target_qn.compile(loss=huber_loss, optimizer=Adam(lr=0.001))
-    main_qn.compile(loss=huber_loss, optimizer=Adam(lr=0.001))
+    main_qn.compile(loss=huber_loss, optimizer=Adam(lr=0.0005))
 
     memory = Memory(MEMORY_SIZE)
 
@@ -81,10 +80,10 @@ if __name__ == '__main__':
             state = get_state()
             state_deque.append(state.astype('float32') / 255.0)
 
-            print('Episode: {}, Step: {}, Epsilon: {}, Action: {}, '.format(episode, step, epsilon, action), end='')
+            print('Episode: {}, Step: {}, Epsilon: {}, Action: {}, '.format(episode, step, epsilon, action_name[action]), end='')
             if step > WARMUP:
                 reward = get_reward(state_deque)
-                if is_scrolling(state_deque) and (action == 1 or action == 3):
+                if is_scrolling(state_deque) and (action == 2 or action == 3):
                     reward += 0.01  # additional reward for moving toward the right side; especially for the Super Mario Bros
                 if is_dead(state_deque):
                     reward = -1

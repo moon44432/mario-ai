@@ -3,6 +3,8 @@ from direct_keys import PressKey, ReleaseKey, ESC, game_keys
 from process_image import *
 from collections import deque
 
+action_name = {0: 'Nothing', 1: 'Left', 2: 'Right', 3: 'Right + Jump', 4: 'Jump'}
+
 
 def pause_button():
     PressKey(ESC)
@@ -11,12 +13,11 @@ def pause_button():
 
 def do_action(key):
     if key == 0:
-        PressKey(game_keys[0])  # Left
+        pass  # Nothing
     elif key == 1:
-        PressKey(game_keys[1])  # Right
+        PressKey(game_keys[0])  # Left
     elif key == 2:
-        PressKey(game_keys[0])  # Left + Jump
-        PressKey(game_keys[3])
+        PressKey(game_keys[1])  # Right
     elif key == 3:
         PressKey(game_keys[1])  # Right + Jump
         PressKey(game_keys[3])
