@@ -84,7 +84,7 @@ if __name__ == '__main__':
             if step > WARMUP:
                 reward = get_reward(state_deque)
                 if is_scrolling(state_deque) and (action == 2 or action == 3):
-                    reward += 0.01  # additional reward for moving toward the right side; especially for the Super Mario Bros
+                    reward += 0.1  # additional reward for moving toward the right side; especially for the Super Mario Bros
                 if is_dead(state_deque):
                     reward = -1
                     dead = True

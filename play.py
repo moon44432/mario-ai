@@ -11,7 +11,6 @@ from keras.models import load_model
 
 NUM_GAMES = 1000
 MAX_STEPS = 20000
-GAMMA = 0.99
 SKIP_FRAMES = 4
 
 
@@ -27,7 +26,7 @@ if __name__ == '__main__':
 
         step = 0
         action = 1
-        epsilon = 0.1
+        epsilon = 0
         value = 0
         state_deque = deque(maxlen=4)
 

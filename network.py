@@ -15,7 +15,7 @@ DN_OUTPUT_SIZE = action_size
 def create_network():
     model = Sequential()
 
-    model.add(Conv2D(32, (6, 6), activation='relu', padding='same', strides=4,
+    model.add(Conv2D(32, (8, 8), activation='relu', padding='same', strides=4,
                      kernel_initializer='he_normal', kernel_regularizer=l2(0.0005), input_shape=DN_INPUT_SHAPE))
 
     model.add(Conv2D(32, (4, 4), activation='relu', padding='same', strides=2,
