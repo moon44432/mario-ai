@@ -1,5 +1,5 @@
 
-from keras.layers import Conv2D, Dense, MaxPool2D, Flatten
+from keras.layers import Conv2D, Dense, Flatten, Dropout, BatchNormalization, Activation
 from keras.models import Sequential
 from keras.regularizers import l2
 import os
@@ -15,17 +15,24 @@ DN_OUTPUT_SIZE = action_size
 def create_network():
     model = Sequential()
 
-    model.add(Conv2D(32, (8, 8), activation='relu', padding='same', strides=4,
+    model.add(Conv2D(32, (8, 8), padding='same', strides=4,
                      kernel_initializer='he_normal', kernel_regularizer=l2(0.0005), input_shape=DN_INPUT_SHAPE))
+    model.add(BatchNormalization())
+    model.add(Activation('relu'))
 
-    model.add(Conv2D(32, (4, 4), activation='relu', padding='same', strides=2,
+    model.add(Conv2D(64, (4, 4), padding='same', strides=2,
                      kernel_initializer='he_normal', kernel_regularizer=l2(0.0005)))
+    model.add(BatchNormalization())
+    model.add(Activation('relu'))
 
-    model.add(Conv2D(32, (3, 3), activation='relu', padding='same', strides=1,
+    model.add(Conv2D(32, (3, 3), padding='same', strides=1,
                      kernel_initializer='he_normal', kernel_regularizer=l2(0.0005)))
+    model.add(BatchNormalization())
+    model.add(Activation('relu'))
 
     model.add(Flatten())
     model.add(Dense(256, activation='relu'))
+    model.add(Dropout(0.5))
 
     model.add(Dense(DN_OUTPUT_SIZE, activation='linear'))
 
