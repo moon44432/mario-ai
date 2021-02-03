@@ -23,5 +23,5 @@ epsilon_stop = 0.1
 epsilon_decay_rate = 0.000001
 
 memory_size = 1000000
-min_memory_len = 1000  # minimum replay memory length for training; must be large than batch size
+min_memory_len = 1000  # minimum replay memory length for training; must be larger than batch size
 batch_size = 32
