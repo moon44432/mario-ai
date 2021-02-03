@@ -1,9 +1,14 @@
-
-from direct_keys import PressKey, ReleaseKey, ESC, game_keys
-from process_image import *
 from collections import deque
 
+import cv2
+import numpy as np
+
+from direct_keys import PressKey, ReleaseKey, ESC, game_keys
+from hparams import state_deque_size
+from process_image import get_image, process_img
+
 action_name = {0: 'Nothing', 1: 'Left', 2: 'Right', 3: 'Right + Jump', 4: 'Jump'}
+action_size = 5
 
 
 def pause_button():
@@ -63,21 +68,21 @@ def is_dead(state_deque):
 
 
 def end_of_episode(state):
-    if state[1, 1] == 0:  # detect screen color(pure black) when mario dies
+    if state[1, 1] == 0:  # detect screen color when mario dies (pure black)
         return 1
     else:
         return 0
 
 
 def start_of_episode(state):
-    if state[1, 1] != 0:  # detect screen color when game starts
+    if state[1, 1] != 0:  # detect screen color when game starts (light blue)
         return 1
     else:
         return 0
 
 
 if __name__ == '__main__':
-    state_deque = deque(maxlen=4)
+    state_deque = deque(maxlen=state_deque_size)
     release_every_key()
 
     while True:
@@ -87,7 +92,7 @@ if __name__ == '__main__':
         if end_of_episode(state):
             continue
 
-        if len(state_deque) == 4:
+        if len(state_deque) == state_deque_size:
             if get_reward(state_deque) == 1:
                 print('+Reward')
             if is_scrolling(state_deque):

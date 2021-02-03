@@ -1,14 +1,14 @@
+import os
 
 from keras.layers import Conv2D, Dense, Flatten, Dropout, BatchNormalization, Activation
 from keras.models import Sequential
 from keras.regularizers import l2
-import os
 
-# params
-img_width = 128
-action_size = 5
+from env import action_size
+from hparams import state_deque_size
+from process_image import img_width
 
-DN_INPUT_SHAPE = (img_width, img_width, 4)
+DN_INPUT_SHAPE = (img_width, img_width, state_deque_size)
 DN_OUTPUT_SIZE = action_size
 
 

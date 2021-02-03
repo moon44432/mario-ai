@@ -1,4 +1,6 @@
 ﻿
+-- This is Lua script for Mesen NES emulator. Run this in the emulator.
+
 function is_dead()
   if emu.read(0x000E, emu.memType.cpu) == 0x0B or emu.read(0x0712, emu.memType.cpu) == 1 then
     return 1

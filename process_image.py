@@ -1,14 +1,17 @@
-
-import numpy as np
 import cv2
+import numpy as np
 from mss import mss
 
-mon = {'top': 60, 'left': 0, 'width': 512, 'height': 480}
+from hparams import mon
+
+img_width = 128
+
 
 def process_img(original_image):
     bw_img = cv2.cvtColor(original_image, cv2.COLOR_BGR2GRAY)
-    resized_img = cv2.resize(bw_img, dsize=(128, 128), interpolation=cv2.INTER_AREA)
+    resized_img = cv2.resize(bw_img, dsize=(img_width, img_width), interpolation=cv2.INTER_AREA)
     return resized_img
+
 
 def get_image():
     with mss() as sct:
@@ -22,9 +25,7 @@ if __name__ == "__main__":
             screen = get_image()
             new_screen = process_img(screen)
 
-            # print(new_screen)
             cv2.imshow('mario', new_screen)
-
             if cv2.waitKey(25) & 0xFF == ord('q'):
                 cv2.destroyAllWindows()
                 break

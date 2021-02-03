@@ -1,46 +1,39 @@
-
-import time
 import random
-from network import action_size
-from env import *
+import time
 from collections import deque
+
+import numpy as np
 from keras.models import load_model
 
-
-# params
-
-NUM_GAMES = 1000
-MAX_STEPS = 20000
-SKIP_FRAMES = 4
-
+from env import get_state_arr, get_state, release_every_key, \
+    start_of_episode, end_of_episode, do_action, action_name, action_size
+from hparams import num_gameplay, skip_frames, state_deque_size, exp_rate
+from process_image import img_width
 
 if __name__ == '__main__':
     model = load_model('./model/model.h5')
     model.summary()
 
-    for game in range(1, NUM_GAMES + 1):
+    for game in range(1, num_gameplay + 1):
         while True:
             state = get_state()
             if start_of_episode(state) == 1:
                 break
 
-        step = 0
-        action = 1
-        epsilon = 0
-        value = 0
-        state_deque = deque(maxlen=4)
+        step, action, value, epsilon = 0, 1, 0, exp_rate
+        state_deque = deque(maxlen=state_deque_size)
 
         while True:
             step += 1
             current_state_arr = get_state_arr(state_deque)
 
-            if step % SKIP_FRAMES == 1:
+            if step % skip_frames == 1:
                 release_every_key()
 
-                if epsilon > np.random.rand() or len(state_deque) < 4:
+                if epsilon > np.random.rand() or len(state_deque) < state_deque_size:
                     action = random.randrange(0, action_size)
                 else:
-                    predict_arr = np.zeros((1, 128, 128, 4))
+                    predict_arr = np.zeros((1, img_width, img_width, state_deque_size))
                     predict_arr[0] = current_state_arr
                     predict = model.predict(predict_arr)[0]
                     action = np.argmax(predict)
@@ -51,16 +44,13 @@ if __name__ == '__main__':
                 time.sleep(0.05)
 
             state = get_state()
-            cv2.imshow('mario', state)
-            if cv2.waitKey(25) & 0xFF == ord('q'):
-                cv2.destroyAllWindows()
-
             state_deque.append(state.astype('float32') / 255.0)
 
-            print('Game #{} Step: {} Action: {} Value: {}'.format(game, step, action_name[action], value), end='')
-            print('')
+            print('Game #{} Step: {} Action: {} Value: {}'.format(game, step, action_name[action], value))
 
             time.sleep(0.05)
 
             if end_of_episode(state):
                 break
+
+    del model
